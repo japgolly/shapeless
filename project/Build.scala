@@ -169,7 +169,7 @@ object ShapelessBuild extends Build {
 
   def commonSettings =
     Seq(
-      organization        := "com.chuusai",
+      organization        := "com.github.japgolly.fork.shapeless",
       scalaVersion        := "2.11.4",
 
       (unmanagedSourceDirectories in Compile) <<= (scalaSource in Compile)(Seq(_)),
@@ -182,5 +182,5 @@ object ShapelessBuild extends Build {
         "-Xfatal-warnings",
         "-deprecation",
         "-unchecked")
-    )
+    ) ++ scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSBuildSettings
 }
