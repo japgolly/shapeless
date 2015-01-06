@@ -113,7 +113,7 @@ object ShapelessBuild extends Build {
           pushChanges
         )
       )
-    )
+    ).configure(sourceMapsToGithub)
 
   lazy val shapelessExamples = Project(
     id = "shapeless-examples",
@@ -161,8 +161,8 @@ object ShapelessBuild extends Build {
 
   def commonSettings = Defaults.defaultSettings ++
     Seq(
-      organization        := "com.chuusai",
-      scalaVersion        := "2.11.0-RC4",
+      organization        := "com.github.japgolly.fork.shapeless",
+      scalaVersion        := "2.11.4",
 
       (unmanagedSourceDirectories in Compile) <<= (scalaSource in Compile)(Seq(_)),
       (unmanagedSourceDirectories in Test) <<= (scalaSource in Test)(Seq(_)),
@@ -179,5 +179,14 @@ object ShapelessBuild extends Build {
         Classpaths.typesafeSnapshots,
         "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
       )
+    ) ++ scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSBuildSettings
+
+  def sourceMapsToGithub: Project => Project =
+    p => p.settings(
+      scalacOptions ++= (if (isSnapshot.value) Seq.empty else Seq({
+        val a = p.base.toURI.toString.replaceFirst("[^/]+/?$", "")
+        val g = "https://raw.githubusercontent.com/japgolly/shapeless"
+        s"-P:scalajs:mapSourceURI:$a->$g/js-v${version.value}/"
+      }))
     )
 }
