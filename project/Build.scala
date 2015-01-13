@@ -34,6 +34,9 @@ import sbtrelease.ReleasePlugin.ReleaseKeys._
 import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Utilities._
 
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.toScalaJSGroupID
+
 object ShapelessBuild extends Build {
   
   override lazy val settings = super.settings :+ (
@@ -53,7 +56,7 @@ object ShapelessBuild extends Build {
       publish := (),
       publishLocal := ()
     )
-  )
+  ).configure(scalajs)
 
   lazy val shapelessCore =
     Project(
@@ -113,7 +116,7 @@ object ShapelessBuild extends Build {
           pushChanges
         )
       )
-    ).configure(sourceMapsToGithub)
+    ).configure(scalajs)
 
   lazy val shapelessExamples = Project(
     id = "shapeless-examples",
@@ -133,7 +136,7 @@ object ShapelessBuild extends Build {
       publish := (),
       publishLocal := ()
     )
-  )
+  ).configure(scalajs)
   
   lazy val runAll = TaskKey[Unit]("run-all") 
   
@@ -179,7 +182,7 @@ object ShapelessBuild extends Build {
         Classpaths.typesafeSnapshots,
         "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
       )
-    ) ++ scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSBuildSettings
+    ) ++ ScalaJSPlugin.projectSettings
 
   def sourceMapsToGithub: Project => Project =
     p => p.settings(
@@ -189,4 +192,8 @@ object ShapelessBuild extends Build {
         s"-P:scalajs:mapSourceURI:$a->$g/js-v${version.value}/"
       }))
     )
+
+  def scalajs: Project => Project =
+    _.enablePlugins(ScalaJSPlugin)
+      .configure(sourceMapsToGithub)
 }
