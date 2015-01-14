@@ -165,7 +165,7 @@ object ShapelessBuild extends Build {
   def commonSettings = Defaults.defaultSettings ++
     Seq(
       organization        := "com.github.japgolly.fork.shapeless",
-      scalaVersion        := "2.11.4",
+      scalaVersion        := "2.11.5",
 
       (unmanagedSourceDirectories in Compile) <<= (scalaSource in Compile)(Seq(_)),
       (unmanagedSourceDirectories in Test) <<= (scalaSource in Test)(Seq(_)),
