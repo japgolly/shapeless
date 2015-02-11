@@ -32,6 +32,9 @@ import sbtrelease.ReleasePlugin.ReleaseKeys._
 import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.Utilities._
 
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.toScalaJSGroupID
+
 object ShapelessBuild extends Build {
 
   lazy val shapeless = Project(
@@ -47,7 +50,7 @@ object ShapelessBuild extends Build {
       publish := (),
       publishLocal := ()
     )
-  )
+  ).configure(scalajs)
 
   lazy val shapelessCore =
     Project(
@@ -103,7 +106,7 @@ object ShapelessBuild extends Build {
           pushChanges
         )
       )
-    )
+    ).configure(scalajs)
 
   lazy val shapelessScratch = Project(
     id = "shapeless-scratch",
@@ -139,7 +142,7 @@ object ShapelessBuild extends Build {
       publish := (),
       publishLocal := ()
     )
-  )
+  ).configure(scalajs)
 
   lazy val runAll = TaskKey[Unit]("run-all")
 
@@ -167,7 +170,7 @@ object ShapelessBuild extends Build {
 
   def commonSettings =
     Seq(
-      organization        := "com.chuusai",
+      organization        := "com.github.japgolly.fork.shapeless",
       scalaVersion        := "2.11.5",
 
       (unmanagedSourceDirectories in Compile) <<= (scalaSource in Compile)(Seq(_)),
@@ -182,5 +185,18 @@ object ShapelessBuild extends Build {
         "-unchecked"),
 
       initialCommands in console := """import shapeless._"""
+    ) ++ ScalaJSPlugin.projectSettings
+
+  def sourceMapsToGithub: Project => Project =
+    p => p.settings(
+      scalacOptions ++= (if (isSnapshot.value) Seq.empty else Seq({
+        val a = p.base.toURI.toString.replaceFirst("[^/]+/?$", "")
+        val g = "https://raw.githubusercontent.com/japgolly/shapeless"
+        s"-P:scalajs:mapSourceURI:$a->$g/js-v${version.value}/"
+      }))
     )
+
+  def scalajs: Project => Project =
+    _.enablePlugins(ScalaJSPlugin)
+      .configure(sourceMapsToGithub)
 }
